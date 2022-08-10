@@ -30,6 +30,29 @@ describe('oauth routes', () => {
       exp: expect.any(Number),
     });
   });
+
+  it('DELETE signs a user out', async () => {
+    const res = await request(app).delete('/api/v1/github');
+    expect(res.status).toEqual(200);
+    expect(res.body.message).toBe('Successfully signed out');
+  });
+
+  it('GET lists all posts for all users', async () => {
+    const appAgent = request.agent(app);
+    let res = await appAgent
+      .get('/api/v1/github/callback?code=42')
+      .redirects(1);
+    res = await appAgent.get('/api/v1/posts');
+
+    expect(res.body).toEqual([
+      {
+        id: '1',
+        title: 'First Post',
+        content: 'ladi dadi daa',
+      },
+    ]);
+  });
+
   afterAll(() => {
     pool.end();
   });
